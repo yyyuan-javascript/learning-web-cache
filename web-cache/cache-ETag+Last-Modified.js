@@ -17,7 +17,7 @@ app.use(async (ctx, next) => {
 
   if (reqPath === "/") reqPath = "/index.html";
 
-  ctx.filePath = "resource" + reqPath;
+  ctx.filePath = path.join( "../resource", reqPath);
 
   next();
 });

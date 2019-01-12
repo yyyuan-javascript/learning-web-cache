@@ -3,6 +3,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 const Koa = require("koa");
 const PassThrough = require("stream").PassThrough;
+// const paths = require('../resource');
 
 const log = console.log;
 const app = new Koa();
@@ -17,7 +18,7 @@ app.use(async (ctx, next) => {
 
   if (reqPath === "/") reqPath = "/index.html";
 
-  ctx.filePath = "resource" + reqPath;
+  ctx.filePath = "../resource" + reqPath;
 
   next();
 });
@@ -62,7 +63,7 @@ app.use(async (ctx, next) => {
 app.use(async (ctx, next) => {
   // 在此处设置缓存策略
 
-  ctx.set("Expires", new Date("2018-10-20 00:00:00"));
+  ctx.set("Expires", new Date("2019-10-20 00:00:00"));
 
   next();
 });

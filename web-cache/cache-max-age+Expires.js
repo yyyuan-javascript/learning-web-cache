@@ -17,7 +17,7 @@ app.use(async (ctx, next) => {
 
   if (reqPath === "/") reqPath = "/index.html";
 
-  ctx.filePath = "resource" + reqPath;
+  ctx.filePath = "../resource" + reqPath;
 
   next();
 });
@@ -63,8 +63,8 @@ app.use(async (ctx, next) => {
 
   // 在此处设置缓存策略
 
-  ctx.set("Expires", new Date("2018-10-20 00:00:00"));
-  ctx.set("Cache-Control", 'max-age=8640');
+  // ctx.set("Expires", new Date("2018-10-20 00:00:00"));
+  // ctx.set("Cache-Control", 'max-age=8640');
 
   next();
 });

@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const crypto = require("crypto");
+// const crypto = require("crypto");
 const Koa = require("koa");
 const PassThrough = require("stream").PassThrough;
 
@@ -17,7 +17,7 @@ app.use(async (ctx, next) => {
 
   if (reqPath === "/") reqPath = "/index.html";
 
-  ctx.filePath = "resource" + reqPath;
+  ctx.filePath = "../resource" + reqPath;
 
   next();
 });
@@ -63,7 +63,7 @@ app.use(async (ctx, next) => {
 
   // 在此处设置缓存策略
 
-  ctx.set("Cache-Control", 'MAX-AGE=86400');
+  // ctx.set("Cache-Control", 'MAX-AGE=86400');
 
   next();
 });
