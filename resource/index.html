@@ -4,24 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
+  <title>HTTP缓存机制</title>
   <link rel="stylesheet" type="text/css" href = "./style.css">
 </head>
 <body>
-  <h1 class = "home-main-title">资源已被修改</h1>
+  <h1 class = "home-main-title">HTTP缓存机制</h1>
+  <img src="./http-cache1.png" alt="HTTP缓存" width="671" height="430"/>
   <p>
-    <a href="/">点击跳转到自身</a>
+    <a href="/">HTTP缓存机制</a>
   </p>
   <p>
-    <a href="./index2.html">点我跳转到index2</a>
+    <a href="./index2.html">浏览器发起http请求的方式</a>
   </p>
   <p>
-    <button id="open-new">新窗口图片</button>
+    <button id="open-new">window.open('http://localhost:3000')</button>
   </p>
-  <img src="./avatar.jpg" alt="img" width="200" height="200"/>
   <script>
-    document.getElementById('open-new').onclick = function() {
-      window.open('http://localhost:1030', '', 'width=200,height=100')
+    document.querySelector('#open-new').onclick = function() {
+      window.open('http://localhost:3000')
     }
   </script>
   <!-- <img src="./avatar2.jpg" alt="img" width="200" height="200"/> -->
