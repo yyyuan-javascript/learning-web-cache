@@ -3,8 +3,9 @@ body{
 }
 
 .home-main-title, .detail-main-title{
-    color: brown;
     color: yellowgreen;
+    /* color: brown; */
+    
 }
 
 a{

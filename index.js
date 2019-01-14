@@ -61,11 +61,11 @@ app.use(async (ctx, next) => {
 
 // 设置缓存
 app.use(async (ctx, next) => {
-let stat, lastMod, mtime,
+let stat, lastMod, mtime, date, cacheTime,
 filePath, stream, filemd5, tag, matchTag; 
   // 在此处设置缓存策略
 
-  switch(4.1){
+  switch(3){
     case 1: // Expires
     ctx.set("Expires", new Date("2019-01-15 21:00:00"));
     break;
@@ -85,9 +85,17 @@ filePath, stream, filemd5, tag, matchTag;
     case 2.5: // no-store 结合协商策略演示
     ctx.set("Cache-Control", 'no-store');
     break;
-    case 3: // Last-Modified 启发式缓存
-    // new Date(year, month, day, hours, minutes, seconds, milliseconds)
-    ctx.set("Last-Modified", new Date(2019, 0, 15, 9, 0, 0, 0));
+    case 3: // Last-Modified 启发式缓存 
+    date = new Date();
+    stat = fs.statSync(ctx.filePath);
+    mtime = new Date(stat.mtime);
+    const cacheTime = (date.getTime() - mtime.getTime()) / 10;
+    const Expires_timestamp = date.getTime() + cacheTime;
+    const Expires_value = new Date(Expires_timestamp);
+    log('date:', date);
+    log('LastMod_time:', mtime)
+    log('Expires_time:', Expires_value);
+    // log(new Date(), 'new date');
     break;
     case 3.1: // If-Modified-Since
     stat = fs.statSync(ctx.filePath);
@@ -136,14 +144,14 @@ filePath, stream, filemd5, tag, matchTag;
     ctx.filemd5 = filemd5;
     log("file md5：%s", filemd5);
     // 设置ETag
-    const tag = `"${ctx.filemd5}"`;
+    tag = `"${ctx.filemd5}"`;
     ctx.set("ETag", tag);
-    const matchTag = ctx.get("If-None-Match");
+    matchTag = ctx.get("If-None-Match");
     
     // 设置Last-Modified
-    const lastMod = ctx.get("If-Modified-Since");
-    const stat = fs.statSync(ctx.filePath);
-    const mtime = new Date(stat.mtime).toGMTString();
+    lastMod = ctx.get("If-Modified-Since");
+    stat = fs.statSync(ctx.filePath);
+    mtime = new Date(stat.mtime).toGMTString();
     ctx.set("Last-Modified", mtime);
 
     switch(3){
