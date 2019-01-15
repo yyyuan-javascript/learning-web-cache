@@ -8,9 +8,14 @@ const PassThrough = require("stream").PassThrough;
 const log = console.log;
 const app = new Koa();
 
+function getEast8Time(date) {
+const east8Time = date.getTime()+3600000*8;
+return new Date(east8Time).toGMTString();
+}
+
 // 获取访问文件路径
 app.use(async (ctx, next) => {
-  log("\n\n\n\n\n\n", "------------请求处理开始------------");
+  log("\n\n", "------------请求处理开始------------");
 
   let reqPath = ctx.path;
 
@@ -65,126 +70,131 @@ let stat, lastMod, mtime, date, cacheTime,
 filePath, stream, filemd5, tag, matchTag; 
   // 在此处设置缓存策略
 
-  switch(3){
+  switch(4.1){
     case 1: // Expires
-    ctx.set("Expires", new Date("2019-01-15 21:00:00"));
-    break;
+      ctx.set("Expires", new Date("2019-01-15 21:00:00"));
+      break;
     case 2: // Cache-Control
     case 2.1: // max-age  reqest headers里面默认Cache-Control: no-cache,最终结果以response hearder里面的cache-control为准
-    ctx.set("Cache-Control", 'max-age=8');
-    break;
+      ctx.set("Cache-Control", 'max-age=8');
+      break;
     case 2.2: // Cache-Control 优先于 Expires
-    ctx.set("Cache-Control", 'max-age=8');
-    ctx.set("Expires", new Date("2019-01-15 21:00:00"));
-    break;
+      ctx.set("Cache-Control", 'max-age=8');
+      ctx.set("Expires", new Date("2019-01-15 21:00:00"));
+      break;
     case 2.3: // Pragama ctrl+F5
-    break;
+      break;
     case 2.4: // no-cache 结合协商策略演示
-    ctx.set("Cache-Control", 'no-cache');
-    break;
-    case 2.5: // no-store 结合协商策略演示
-    ctx.set("Cache-Control", 'no-store');
-    break;
-    case 3: // Last-Modified 启发式缓存 
-    date = new Date();
-    stat = fs.statSync(ctx.filePath);
-    mtime = new Date(stat.mtime);
-    const cacheTime = (date.getTime() - mtime.getTime()) / 10;
-    const Expires_timestamp = date.getTime() + cacheTime;
-    const Expires_value = new Date(Expires_timestamp);
-    log('date:', date);
-    log('LastMod_time:', mtime)
-    log('Expires_time:', Expires_value);
-    // log(new Date(), 'new date');
-    break;
-    case 3.1: // If-Modified-Since
-    stat = fs.statSync(ctx.filePath);
-    mtime = new Date(stat.mtime).toGMTString();
-    lastMod = ctx.get("If-Modified-Since");
-    if (lastMod && lastMod === mtime) {
-      ctx.status = 304;
-      return;
-    }
-    ctx.set("Cache-Control", 'no-cache');
-    ctx.set("Last-Modified", mtime);
-    break;
-    case 3.2: // If-Unmodified-Since 需要修改request headers实现
-    stat = fs.statSync(ctx.filePath);
-    mtime = new Date(stat.mtime).toGMTString();
-    lastMod = ctx.get("If-Unmodified-Since");
-    log(lastMod, 'lastMod');
-    log(mtime, 'mtime');
-    if(lastMod && lastMod !== mtime) {
-      ctx.status = 412; // Precondition Failed
-      return;
-    }
-    ctx.set("Cache-Control", 'no-cache');
-    ctx.set("Last-Modified", mtime);
-    break;
-    case 4: // ETag if-None-Match if-Match
-     filePath = ctx.filePath;
-
-    //从文件创建一个可读流
-    stream = fs.readFileSync(filePath);
-     filemd5 = md5(stream);
-    ctx.filemd5 = filemd5;
-    log("file md5：%s", filemd5);
-     tag = `"${ctx.filemd5}"`; // ETag 必须加双引号
-     matchTag = ctx.get("If-None-Match");
-    if (matchTag && matchTag === tag) {
-      ctx.status = 304;
-      return;
-    }
-    ctx.set("ETag", tag);
-    break;
-    case 4.1: // ETag 优先于 Last-Modified
-    filePath = ctx.filePath;
-    stream = fs.readFileSync(filePath);
-    filemd5 = md5(stream);
-    ctx.filemd5 = filemd5;
-    log("file md5：%s", filemd5);
-    // 设置ETag
-    tag = `"${ctx.filemd5}"`;
-    ctx.set("ETag", tag);
-    matchTag = ctx.get("If-None-Match");
-    
-    // 设置Last-Modified
-    lastMod = ctx.get("If-Modified-Since");
-    stat = fs.statSync(ctx.filePath);
-    mtime = new Date(stat.mtime).toGMTString();
-    ctx.set("Last-Modified", mtime);
-
-    switch(3){
-      case 1: 
       ctx.set("Cache-Control", 'no-cache');
       break;
-      case 2:
+    case 2.5: // no-store 结合协商策略演示
       ctx.set("Cache-Control", 'no-store');
       break;
-      case 3:
-      ctx.set("Cache-Control", 'max-age=86400');
-    }
-
-      // etag 缓存判断
-      if (matchTag && matchTag === tag) {
+    case 3: // Last-Modified 启发式缓存 
+      date = new Date();
+      stat = fs.statSync(ctx.filePath);
+      mtime = new Date(stat.mtime);
+      const cacheTime = (date.getTime() - mtime.getTime()) / 10;
+      const Expires_timestamp = date.getTime() + cacheTime;
+      const Expires_value = new Date(Expires_timestamp);
+      log('cacheTime:', cacheTime,'ms');
+      log('date:', getEast8Time(date));
+      log('LastMod_time:', getEast8Time(mtime));
+      log('Expires_time:', getEast8Time(Expires_value));
+      ifModSince = ctx.get("If-Modified-Since");
+      if (ifModSince && ifModSince === mtime.toGMTString()) {
         ctx.status = 304;
-        log('ETag 生效')
         return;
       }
-
-      // last-modified缓存
+      ctx.set("Last-Modified", mtime.toGMTString());
+      // log(new Date(), 'new date');
+      break;
+    case 3.1: // If-Modified-Since
+      stat = fs.statSync(ctx.filePath);
+      mtime = new Date(stat.mtime).toGMTString();
+      lastMod = ctx.get("If-Modified-Since");
       if (lastMod && lastMod === mtime) {
         ctx.status = 304;
-        log('Last-Modified 生效')
         return;
       }
+      ctx.set("Cache-Control", 'no-cache');
+      ctx.set("Last-Modified", mtime);
+      break;
+    case 3.2: // If-Unmodified-Since 需要修改request headers实现
+    // stat = fs.statSync(ctx.filePath);
+    // mtime = new Date(stat.mtime).toGMTString();
+    // lastMod = ctx.get("If-Unmodified-Since");
+    // log(lastMod, 'lastMod');
+    // log(mtime, 'mtime');
+    // if(lastMod && lastMod !== mtime) {
+    //   ctx.status = 412; // Precondition Failed
+    //   return;
+    // }
+    // ctx.set("Cache-Control", 'no-cache');
+    // ctx.set("Last-Modified", mtime);
+    break;
+    case 4: // ETag if-None-Match if-Match
+      filePath = ctx.filePath;
 
+      //从文件创建一个可读流
+      stream = fs.readFileSync(filePath);
+      filemd5 = md5(stream);
+      ctx.filemd5 = filemd5;
+      log("file md5：%s", filemd5);
+      tag = `"${ctx.filemd5}"`; // ETag 必须加双引号
+      matchTag = ctx.get("If-None-Match");
+      if (matchTag && matchTag === tag) {
+        ctx.status = 304;
+        return;
+      }
+      ctx.set("ETag", tag);
       break;
+    case 4.1: // ETag 优先于 Last-Modified
+      filePath = ctx.filePath;
+      stream = fs.readFileSync(filePath);
+      filemd5 = md5(stream);
+      ctx.filemd5 = filemd5;
+      log("file md5：%s", filemd5);
+      // 设置ETag
+      tag = `"ctx.filemd5"`;
+      ctx.set("ETag", tag);
+      matchTag = ctx.get("If-None-Match");
+      
+      // 设置Last-Modified
+      lastMod = ctx.get("If-Modified-Since");
+      stat = fs.statSync(ctx.filePath);
+      mtime = new Date(stat.mtime).toGMTString();
+      ctx.set("Last-Modified", mtime);
+
+      switch(3){
+        case 1: // no-cache 缓存立即过期，可以走协商缓存
+        ctx.set("Cache-Control", 'no-cache');
+        break;
+        case 2: // no-store 没有缓存， 不能走协商缓存
+        ctx.set("Cache-Control", 'no-store');
+        break;
+        case 3: // 验证链接跳转
+        ctx.set("Cache-Control", 'max-age=86400');
+      }
+
+        // etag 缓存判断
+        if (matchTag && matchTag === tag) {
+          ctx.status = 304;
+          log('ETag 生效')
+          return;
+        }
+
+        // last-modified缓存
+        if (lastMod && lastMod === mtime) {
+          ctx.status = 304;
+          log('Last-Modified 生效')
+          return;
+        }
+        break;
       default:
-      break;
+        break;
     }
     
-
   next();
 });
 

@@ -10,11 +10,13 @@
     "execMap": {
         "js": "node --harmony"
     },
-    "watch": ["/"
+    "watch": [
+        "resource/",
+        "index.js"
     ],
     "env": {
         "NODE_ENV": "development"
     },
-    "ext": "js json"
+    "ext": "js json css html png"
 
 }
