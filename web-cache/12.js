@@ -27,7 +27,7 @@ const main = serve(path.join(__dirname+'./resource'));
 
 //   next();
 // });
-
+// 123
 app.use( async ( ctx ) => {
     ctx.set({ "Content-Type": "text/html" });
     ctx.body = 'hello world <img src="./avatar.jpg" alt="img" width="200" height="200"/>'
